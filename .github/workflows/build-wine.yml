@@ -5,22 +5,20 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-  workflow_dispatch: # Permite ejecutarlo manualmente
+  workflow_dispatch:
 
 jobs:
   build-wine:
-    runs-on: macos-latest # O macos-13 si está disponible
+    runs-on: macos-latest
     env:
-      # Objetivo de despliegue para High Sierra (10.13)
       MACOSX_DEPLOYMENT_TARGET: "10.13"
-      # Usar ruta de librerías de Homebrew
       LDFLAGS: "-Wl,-headerpad_max_install_names -Wl,-rpath,/usr/local/lib"
 
     steps:
       - name: Checkout del repositorio
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4          # ✅ Actualizado
 
-      - name: Instalar dependencias con Homebrew
+      - name: Instalar dependencias
         run: |
           brew install bison mingw-w64 molten-vk sdl2
 
@@ -28,11 +26,11 @@ jobs:
         run: |
           echo "$(brew --prefix bison)/bin" >> $GITHUB_PATH
 
-      - name: Clonar el código fuente de Wine
+      - name: Clonar Wine
         run: |
           git clone --depth=1 https://github.com/wine-mirror/wine.git
 
-      - name: Configurar Wine (solo 64-bit)
+      - name: Configurar Wine (64-bit)
         run: |
           cd wine
           ./configure --enable-win64 \
@@ -44,15 +42,17 @@ jobs:
             --without-udev \
             --without-v4l2 \
             --without-wayland \
+            --without-mingw \
+            --without-msvcmaker \
             --without-x
 
-      - name: Compilar Wine
+      - name: Compilar
         run: |
           cd wine
           make -j$(sysctl -n hw.ncpu)
 
-      - name: Subir el binario compilado como artefacto
-        uses: actions/upload-artifact@v3
+      - name: Subir el binario compilado
+        uses: actions/upload-artifact@v4    # ✅ Actualizado
         with:
           name: wine-macos-high-sierra
           path: wine/wine
