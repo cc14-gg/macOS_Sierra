@@ -42,8 +42,6 @@ jobs:
             --without-udev \
             --without-v4l2 \
             --without-wayland \
-            --without-mingw \
-            --without-msvcmaker \
             --without-x
 
       - name: Compilar
